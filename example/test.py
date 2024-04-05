@@ -1,6 +1,5 @@
 import cupy as cp
 import numpy as np
-import pickle
 from tqdm import tqdm
 from sklearn.metrics import classification_report
 
@@ -21,7 +20,7 @@ def main() -> None:
     all_preds = []
     all_labels = []
 
-    steps = len(train_x) // batch_size
+    steps = len(test_x) // batch_size
 
     for times in tqdm(range(steps)):
         inputs = test_x[times*batch_size:(times+1)*batch_size]

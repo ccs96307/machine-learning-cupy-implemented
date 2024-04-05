@@ -1,21 +1,32 @@
-from typing import Union
-import numpy as np
-import cupy as cp
+from custom_types import DataArray
 from utils import get_backend
 
 
-DataArray = Union[np.ndarray, cp.ndarray]
+def cross_entropy_loss(
+    y_pred: DataArray,
+    y_true: DataArray,
+    smoothing: float = 1e-15,
+) -> DataArray:
+    """
+    The cross-entropy loss function.
+    
 
+    Args:
+        y_pred (DataArray): The model prediction. Shape is (batch_size, classes_num), They're probabilities.
+        y_true (DataArray): The ground truth data. Shape is (batch_size, classes_num), They're one-hot encoding format.
+        smoothing (float): Clip for numerical stability
+    Returns:
+        DataArray: The calculated loss scores.
+    """
+    backend = get_backend(y_pred)
 
-def cross_entropy_loss(y_true: DataArray, y_pred: DataArray, backend=np) -> DataArray:
-    backend = get_backend(y_true)
-    # Note: y_true must be one-hot encoding format
-    # y_true's shape is (batch_size, classes_num)
-    # y_pred's shape is (batch_size, classes_num), it's a logits
+    if get_backend(y_true) != backend:
+        raise TypeError("The Backend type of `y_pred` needs to be the same with `y_true`.")
+
     batch_size = y_true.shape[0]
 
-    smoothing = 1e-15
-    loss = -1 / batch_size * backend.sum(y_true * backend.log(y_pred + smoothing))
+    total_loss = -1 * backend.sum(y_true * backend.log(y_pred + smoothing))
+    average_loss = total_loss / batch_size
 
-    return loss
+    return average_loss
 
